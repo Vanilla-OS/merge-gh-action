@@ -115,7 +115,7 @@ runs:
         manifest_digest="$(cat "$DIGEST_FILE")"
         for tag in "${tags[@]:1}"; do
           skopeo copy --all \
-            "docker://${IMAGE_URL}@sha256:${manifest_digest}" \
+            "docker://${IMAGE_URL}@${manifest_digest}" \
             "docker://$tag"
           echo "Pushed $tag"
         done
