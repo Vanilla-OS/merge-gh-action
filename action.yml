@@ -107,7 +107,7 @@ runs:
           buildah manifest add "$primary" "$digest" \
             --annotation "io.github.containers.compression.zstd=true"
         done
-        buildah manifest push --all \
+        buildah manifest push \
           --digestfile "$DIGEST_FILE" \
           "$primary" "docker://$primary"
         echo "Pushed $primary"
