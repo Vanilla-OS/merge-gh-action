@@ -11,7 +11,7 @@ inputs:
     required: true
 
   legacy-image:
-    description: 'Optional legacy image reference including tag (e.g. ghcr.io/owner/desktop:main)'
+    description: 'Optional legacy image name, with an optional tag (e.g. ghcr.io/owner/desktop)'
     required: false
 
   registry-username:
@@ -93,9 +93,21 @@ runs:
         fi
 
         tags=()
-        for tag in $META_TAGS $LEGACY_IMAGE; do
+        for tag in $META_TAGS; do
           if [ -n "$tag" ]; then tags+=("$tag"); fi
         done
+        if [ -n "$LEGACY_IMAGE" ]; then
+          legacy_name="${LEGACY_IMAGE##*/}"
+          if [[ "$legacy_name" == *:* ]]; then
+            tags+=("$LEGACY_IMAGE")
+          else
+            for tag in $META_TAGS; do
+              if [ -n "$tag" ]; then
+                tags+=("${LEGACY_IMAGE}:${tag##*:}")
+              fi
+            done
+          fi
+        fi
         if [ ${#tags[@]} -eq 0 ]; then
           echo "::error::No target tags to push."
           exit 1
