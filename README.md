@@ -50,7 +50,7 @@ Expects one empty file per architecture inside the downloaded digests directory,
 | Input | Required | Default | Description |
 | --- | --- | --- | --- |
 | `image` | ✅ | — | Target image name **without** a tag, e.g. `ghcr.io/owner/my-image`. Lowercased per the OCI spec. |
-| `legacy-image` | | — | Optional legacy image reference including a tag (e.g. `ghcr.io/owner/desktop:main`). When set, the manifest list is also pushed there. |
+| `legacy-image` | | — | Optional legacy image name (e.g. `ghcr.io/owner/desktop`). Without a tag, the manifest is pushed there with the same tags as `image`;  |
 | `registry-username` | | `github.repository_owner` | Registry username. Only needed for non-GHCR registries. |
 | `registry-password` | | `github.token` | Registry password or token. Only needed for non-GHCR registries. |
 
