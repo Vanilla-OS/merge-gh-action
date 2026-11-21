@@ -39,12 +39,17 @@ runs:
       shell: bash
       env:
         IMAGE_INPUT: ${{ inputs.image }}
+        LEGACY_IMAGE_INPUT: ${{ inputs.legacy-image }}
       run: |
         IMAGE_URL="$(echo "$IMAGE_INPUT" | tr '[:upper:]' '[:lower:]')"
         echo "IMAGE_URL=$IMAGE_URL" >> "$GITHUB_ENV"
-        echo "IMAGE_REGISTRY=${IMAGE_URL%/*}" >> "$GITHUB_ENV"
+        echo "IMAGE_REGISTRY=${IMAGE_URL%%/*}" >> "$GITHUB_ENV"
         echo "IMAGE_NAME=${IMAGE_URL##*/}" >> "$GITHUB_ENV"
         echo "image-url=$IMAGE_URL" >> "$GITHUB_OUTPUT"
+        if [ -n "$LEGACY_IMAGE_INPUT" ]; then
+          LEGACY_IMAGE_LC="$(echo "$LEGACY_IMAGE_INPUT" | tr '[:upper:]' '[:lower:]')"
+          echo "LEGACY_IMAGE=$LEGACY_IMAGE_LC" >> "$GITHUB_ENV"
+        fi
 
     - name: Login to GitHub Package Registry
       uses: redhat-actions/podman-login@v2
@@ -78,7 +83,7 @@ runs:
       shell: bash
       env:
         META_TAGS: ${{ steps.meta.outputs.tags }}
-        LEGACY_IMAGE: ${{ inputs.legacy-image }}
+        LEGACY_IMAGE: ${{ env.LEGACY_IMAGE }}
         DIGEST_FILE: ${{ runner.temp }}/vib-manifest.digest
       run: |
         set -euo pipefail
