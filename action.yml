@@ -78,7 +78,6 @@ runs:
       shell: bash
       env:
         META_TAGS: ${{ steps.meta.outputs.tags }}
-        LEGACY_IMAGE: ${{ inputs.legacy-image }}
         DIGEST_FILE: ${{ runner.temp }}/vib-manifest.digest
       run: |
         set -euo pipefail
@@ -96,18 +95,6 @@ runs:
         for tag in $META_TAGS; do
           if [ -n "$tag" ]; then tags+=("$tag"); fi
         done
-        if [ -n "$LEGACY_IMAGE" ]; then
-          legacy_name="${LEGACY_IMAGE##*/}"
-          if [[ "$legacy_name" == *:* ]]; then
-            tags+=("$LEGACY_IMAGE")
-          else
-            for tag in $META_TAGS; do
-              if [ -n "$tag" ]; then
-                tags+=("${LEGACY_IMAGE}:${tag##*:}")
-              fi
-            done
-          fi
-        fi
         if [ ${#tags[@]} -eq 0 ]; then
           echo "::error::No target tags to push."
           exit 1
@@ -126,6 +113,36 @@ runs:
 
         manifest_digest="$(cat "$DIGEST_FILE")"
         for tag in "${tags[@]:1}"; do
+          skopeo copy --all \
+            "docker://${IMAGE_URL}@${manifest_digest}" \
+            "docker://$tag"
+          echo "Pushed $tag"
+        done
+
+    - name: Push legacy image tags
+      if: ${{ github.ref_type == 'tag' && inputs.legacy-image != '' }}
+      shell: bash
+      env:
+        META_TAGS: ${{ steps.meta.outputs.tags }}
+        LEGACY_IMAGE: ${{ inputs.legacy-image }}
+        DIGEST_FILE: ${{ runner.temp }}/vib-manifest.digest
+      run: |
+        set -euo pipefail
+
+        tags=()
+        legacy_name="${LEGACY_IMAGE##*/}"
+        if [[ "$legacy_name" == *:* ]]; then
+          tags+=("$LEGACY_IMAGE")
+        else
+          for tag in $META_TAGS; do
+            if [ -n "$tag" ]; then
+              tags+=("${LEGACY_IMAGE}:${tag##*:}")
+            fi
+          done
+        fi
+
+        manifest_digest="$(cat "$DIGEST_FILE")"
+        for tag in "${tags[@]}"; do
           skopeo copy --all \
             "docker://${IMAGE_URL}@${manifest_digest}" \
             "docker://$tag"
