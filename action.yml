@@ -1,4 +1,4 @@
-name: 'Vanilla OS Desktop Image Merge'
+name: 'Merge Images'
 description: 'Merge the per-architecture Vanilla OS image digests into a multi-arch manifest list'
 author: 'Vanilla OS Contributors'
 branding:
